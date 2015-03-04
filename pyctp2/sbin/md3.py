@@ -49,31 +49,72 @@ def md_exec():
     # return make_users(my_ports,[CM_ALL])
     return make_users(my_ports,[CM_ZJ])
 
-@asyncio.coroutine
-def hello(websocket, path):
-    while True:
-        name = yield from websocket.recv()
-        if name != "IF1509":
-            print("< {}".format(name))
-            greeting = "Hello {}!".format(name)
-            # yield from producer(websocket,name)
-            # t = threading.Thread(target=producer,args=(websocket,name))
-            # t.run()
-            yield from self.producer(websocket,name)
-            yield from websocket.send(greeting)
-            # producer(websocket,name)
-            print("> {}".format(greeting))
+import asyncio
+from autobahn.asyncio.websocket import WebSocketServerProtocol, WebSocketServerFactory
+import threading
+import time
 
-@asyncio.coroutine
-def producer(websocket,args):
-    for i in range(1,10):
-        greeting = "Hello {}!".format(args)
+from pydispatch import dispatcher
+SIGNAL = 'my-first-signal'
+
+
+def producer():
+    i = 0
+    while True:
+        i += 1
         print (i)
-        yield from websocket.send(str(i))
+        dispatcher.send(data=i)
         time.sleep(1)
 
 
-start_server = websockets.serve(hello, 'localhost', 8766)
+class MyServerProtocol(WebSocketServerProtocol):
+    def onConnect(self, request):
+        print("Client connecting: {}".format(request.peer))
 
-asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_forever()
+    def handle_event(self,data):
+        """Simple event handler"""
+        print('data')
+        msg = str(data).encode('utf8')
+        self.sendMessage(msg)
+        print ("message send")
+
+    def onOpen(self):
+        print("WebSocket connection open.")
+        # asyncio.async(send_msg(self))
+        dispatcher.connect( self.handle_event, sender=dispatcher.Any)
+
+    def onClose(self, wasClean, code, reason):
+        print("WebSocket connection closed: {}".format(reason))
+
+    def onMessage(self, payload, isBinary):
+      ## echo back message verbatim
+        self.sendMessage(payload, isBinary)
+
+@asyncio.coroutine
+def send_msg(ws):
+    for i in range(100,110):
+        print (i)
+        msg=str(i).encode('utf8')
+        ws.sendMessage(msg,False)
+        yield from asyncio.sleep(1)
+
+factory = WebSocketServerFactory()
+factory.protocol = MyServerProtocol
+
+
+t = threading.Thread(target=producer,args=())
+t.setDaemon(True)
+t.start()
+
+loop = asyncio.get_event_loop()
+coro = loop.create_server(factory, '127.0.0.1', 9002)
+server = loop.run_until_complete(coro)
+print("server created")
+
+try:
+  loop.run_forever()
+except KeyboardInterrupt:
+  pass
+finally:
+  server.close()
+  loop.close()
