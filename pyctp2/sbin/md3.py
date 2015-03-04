@@ -16,6 +16,13 @@ from ..md import save_agent as save_agent
 
 from ..my.ports import ZSUsersC as my_ports
 
+import asyncio
+from autobahn.asyncio.websocket import WebSocketServerProtocol, WebSocketServerFactory
+import threading
+import time
+from pydispatch import dispatcher
+
+
 def make_users(mduser,contract_managers):
     controller = ctl.TController()
     mdagents = [save_agent.SaveAgent(cmng,DATA_PATH) for cmng in contract_managers]
@@ -49,14 +56,8 @@ def md_exec():
     # return make_users(my_ports,[CM_ALL])
     return make_users(my_ports,[CM_ZJ])
 
-import asyncio
-from autobahn.asyncio.websocket import WebSocketServerProtocol, WebSocketServerFactory
-import threading
-import time
 
-from pydispatch import dispatcher
 SIGNAL = 'my-first-signal'
-
 
 def producer():
     i = 0
@@ -66,7 +67,6 @@ def producer():
         dispatcher.send(data=i)
         time.sleep(1)
 
-
 class MyServerProtocol(WebSocketServerProtocol):
     def onConnect(self, request):
         print("Client connecting: {}".format(request.peer))
@@ -74,7 +74,8 @@ class MyServerProtocol(WebSocketServerProtocol):
     def handle_event(self,data):
         """Simple event handler"""
         print('data')
-        msg = str(data).encode('utf8')
+        tick=data
+        msg = str(data.name).encode('utf8')
         self.sendMessage(msg)
         print ("message send")
 
@@ -90,31 +91,23 @@ class MyServerProtocol(WebSocketServerProtocol):
       ## echo back message verbatim
         self.sendMessage(payload, isBinary)
 
-@asyncio.coroutine
-def send_msg(ws):
-    for i in range(100,110):
-        print (i)
-        msg=str(i).encode('utf8')
-        ws.sendMessage(msg,False)
-        yield from asyncio.sleep(1)
+def ws_exec():
+    factory = WebSocketServerFactory()
+    factory.protocol = MyServerProtocol
 
-factory = WebSocketServerFactory()
-factory.protocol = MyServerProtocol
+    t = threading.Thread(target=md_exec,args=())
+    t.setDaemon(True)
+    t.start()
 
+    loop = asyncio.get_event_loop()
+    coro = loop.create_server(factory, '127.0.0.1', 9002)
+    server = loop.run_until_complete(coro)
+    print("server created")
 
-t = threading.Thread(target=producer,args=())
-t.setDaemon(True)
-t.start()
-
-loop = asyncio.get_event_loop()
-coro = loop.create_server(factory, '127.0.0.1', 9002)
-server = loop.run_until_complete(coro)
-print("server created")
-
-try:
-  loop.run_forever()
-except KeyboardInterrupt:
-  pass
-finally:
-  server.close()
-  loop.close()
+    try:
+      loop.run_forever()
+    except KeyboardInterrupt:
+      pass
+    finally:
+      server.close()
+      loop.close()

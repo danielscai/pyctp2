@@ -7,8 +7,8 @@ import threading
 import logging
 import random
 import gc
-import asyncio
-import websockets
+from pydispatch import dispatcher
+
 
 from ..common.base import BaseObject,CN_TRADE_SECTION,DAY_FINALIZE_TICK,check_path
 from ..common.agent import ManagedAgent
@@ -133,6 +133,7 @@ class SaveAgent(ManagedAgent):
                     print (contract_name)
                     print (tick.time)
                     print (tick.price)
+                    dispatcher.send(data=tick)
 
                     #tf.write('%(time)d,%(msec)d,%(price)d,%(high)d,%(low)d,%(dvolume)d,%(holding)d,%(bid_price)d,%(bid_volume)d,%(ask_price)d,%(ask_volume)d\n' % tick.mydict())
                     #tf.write('%(min1)04d%(sec)02d,%(msec)d,%(price)d,%(high)d,%(low)d,%(dvolume)d,%(holding)d,%(bid_price)d,%(bid_volume)d,%(ask_price)d,%(ask_volume)d\n' % tick.mydict())
