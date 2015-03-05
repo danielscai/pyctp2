@@ -47,5 +47,5 @@ def md_exec():
     '''
     logging.basicConfig(filename="%s/pyctp2_md.log" % (INFO_PATH,),level=logging.DEBUG,format='%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s')
     # return make_users(my_ports,[CM_ALL])
-    return make_users(my_ports,[CM_ZJ])
+    return make_users(my_ports,[CM_ALL])
 

@@ -133,7 +133,8 @@ class SaveAgent(ManagedAgent):
                     print (contract_name)
                     print (tick.time)
                     print (tick.price)
-                    dispatcher.send(data=tick)
+                    dispatcher.send(tick=tick,contract=contract_name)
+                    print('dispatcher data send')
 
                     #tf.write('%(time)d,%(msec)d,%(price)d,%(high)d,%(low)d,%(dvolume)d,%(holding)d,%(bid_price)d,%(bid_volume)d,%(ask_price)d,%(ask_volume)d\n' % tick.mydict())
                     #tf.write('%(min1)04d%(sec)02d,%(msec)d,%(price)d,%(high)d,%(low)d,%(dvolume)d,%(holding)d,%(bid_price)d,%(bid_volume)d,%(ask_price)d,%(ask_volume)d\n' % tick.mydict())
