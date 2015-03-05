@@ -5,22 +5,19 @@
     python red.py pyctp2.sbin.md2 md_exec
 """
 
-
 import logging
 import threading
-import time
-import asyncio
 
+import asyncio
 from pydispatch import dispatcher
 from autobahn.asyncio.websocket import WebSocketServerProtocol, WebSocketServerFactory
 
-from ..common.base import INFO_PATH,DATA_PATH
-from ..md import ctp_md as cm
-from ..common import controller as ctl
-from ..common.contract_type import CM_ALL, CM_ZJ
-from ..md import ws_agent
-
-from ..my.ports import ZSUsersC as my_ports
+from pyctp2.common.base import INFO_PATH,DATA_PATH
+from pyctp2.md import ctp_md as cm
+from pyctp2.common import controller as ctl
+from pyctp2.common.contract_type import CM_ALL
+import ws_agent
+from pyctp2.my.ports import ZSUsersC as my_ports
 
 
 def make_users(mduser,contract_managers):
@@ -99,3 +96,5 @@ def ws_exec():
     finally:
       server.close()
       loop.close()
+
+ws_exec()

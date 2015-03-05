@@ -10,9 +10,9 @@ import gc
 from pydispatch import dispatcher
 
 
-from ..common.base import BaseObject,CN_TRADE_SECTION,DAY_FINALIZE_TICK,check_path
-from ..common.agent import ManagedAgent
-from ..core.dac import MINUTE,MINUTED
+from pyctp2.common.base import BaseObject,CN_TRADE_SECTION,DAY_FINALIZE_TICK,check_path
+from pyctp2.common.agent import ManagedAgent
+from pyctp2.core.dac import MINUTE,MINUTED
 #from .minute import Minutes
 
 #TICK_STR = '%(time)d,%(msec)d,%(price)d,%(high)d,%(low)d,%(dvolume)d,%(holding)d,%(bid_price)d,%(bid_volume)d,%(ask_price)d,%(ask_volume)d\n'
