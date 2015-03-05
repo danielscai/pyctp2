@@ -57,30 +57,38 @@ class WsAgent(ManagedAgent):
         super()._new_tick(ctick)
         cb = self._cbuffer[ctick.instrument]
         ticks = cb.contract.ticks
-        minutes = MINUTE(ticks)
-        #print('in SaveAgent,ctick=%s',(ctick.time,))
-        if minutes.modified:
-            #print("before save minutes1",ctick.instrument,minutes[-1].stime,)
-            sbefore =  len(ticks)
-            self._save_minute1(ctick.instrument,minutes[-1])
-            safter = len(ticks)
-            print("after save minutes1,contract=%s,time=%s,before_len=%d,after_len=%s" %(ctick.instrument,minutes[-1].stime,sbefore,safter))
-            #if len(ticks) > 2000 or random.randint(0,1000) > 900:
-            if safter > 100 or random.randint(0,1000) > 900:
-                #print("before ticks remove_head 1:",cb.ticks_saved_size)
-                try:
-                    #self._save_ticks1(ctick.instrument,ticks,cb.ticks_saved_size)
-                    self._save_ticks1(ctick.instrument,ticks)
-                except Exception as e:
-                    print("save_ticks exception:",e)
-                #cb.ticks_saved_size = len(ticks)
-                ###调试用
-                print("ticks remove_all:%s,safter=%d"%(ctick.instrument,safter))
-                #ticks.remove_head(cb.ticks_saved_size)
-                ticks.remove_all()
-                #cb.ticks_saved_size = 0
-                gc.collect()
-                objgraph.show_most_common_types(limit=20)
+
+        try:
+            #self._save_ticks1(ctick.instrument,ticks,cb.ticks_saved_size)
+            self._save_ticks1(ctick.instrument,ticks)
+        except Exception as e:
+            print("save_ticks exception:",e)
+
+
+        # minutes = MINUTE(ticks)
+        # #print('in SaveAgent,ctick=%s',(ctick.time,))
+        # if minutes.modified:
+        #     #print("before save minutes1",ctick.instrument,minutes[-1].stime,)
+        #     sbefore =  len(ticks)
+        #     self._save_minute1(ctick.instrument,minutes[-1])
+        #     safter = len(ticks)
+        #     print("after save minutes1,contract=%s,time=%s,before_len=%d,after_len=%s" %(ctick.instrument,minutes[-1].stime,sbefore,safter))
+        #     #if len(ticks) > 2000 or random.randint(0,1000) > 900:
+        #     if safter > 100 or random.randint(0,1000) > 900:
+        #         #print("before ticks remove_head 1:",cb.ticks_saved_size)
+        #         try:
+        #             #self._save_ticks1(ctick.instrument,ticks,cb.ticks_saved_size)
+        #             self._save_ticks1(ctick.instrument,ticks)
+        #         except Exception as e:
+        #             print("save_ticks exception:",e)
+        #         #cb.ticks_saved_size = len(ticks)
+        #         ###调试用
+        #         print("ticks remove_all:%s,safter=%d"%(ctick.instrument,safter))
+        #         #ticks.remove_head(cb.ticks_saved_size)
+        #         ticks.remove_all()
+        #         #cb.ticks_saved_size = 0
+        #         gc.collect()
+        #         objgraph.show_most_common_types(limit=20)
 
     def day_finalize(self):
         super().day_finalize()
@@ -121,23 +129,19 @@ class WsAgent(ManagedAgent):
             else:
                 tdate = ticks[saved_size+1].tdate
         b = time.time()
-        sformat = TICK_FORMAT % {'flen':self._cbuffer[contract_name].contract.ctype.flen}
-        cpath = '%s/%s' % (self.relative_path,contract_name)
-        check_path(cpath)
-        with open('%s/%s.csv' % (cpath,tdate),'at') as tf:
-            for tick in ticks[saved_size:]:
-                if tick != DAY_FINALIZE_TICK:
-                    #tick.time %= 10000000000    #MMDDhhmmss
-                    tf.write(sformat.format(tick))
-                    print ("===========")
-                    print (contract_name)
-                    print (tick.time)
-                    print (tick.price)
-                    dispatcher.send(tick=tick,contract=contract_name)
-                    print('dispatcher data send')
 
-                    #tf.write('%(time)d,%(msec)d,%(price)d,%(high)d,%(low)d,%(dvolume)d,%(holding)d,%(bid_price)d,%(bid_volume)d,%(ask_price)d,%(ask_volume)d\n' % tick.mydict())
-                    #tf.write('%(min1)04d%(sec)02d,%(msec)d,%(price)d,%(high)d,%(low)d,%(dvolume)d,%(holding)d,%(bid_price)d,%(bid_volume)d,%(ask_price)d,%(ask_volume)d\n' % tick.mydict())
+        for tick in ticks[saved_size:]:
+            if tick != DAY_FINALIZE_TICK:
+                #tick.time %= 10000000000    #MMDDhhmmss
+                print ("===========")
+                print (contract_name)
+                print (tick.time)
+                print (tick.price)
+                dispatcher.send(tick=tick,contract=contract_name)
+                print('dispatcher data send')
+
+                #tf.write('%(time)d,%(msec)d,%(price)d,%(high)d,%(low)d,%(dvolume)d,%(holding)d,%(bid_price)d,%(bid_volume)d,%(ask_price)d,%(ask_volume)d\n' % tick.mydict())
+                #tf.write('%(min1)04d%(sec)02d,%(msec)d,%(price)d,%(high)d,%(low)d,%(dvolume)d,%(holding)d,%(bid_price)d,%(bid_volume)d,%(ask_price)d,%(ask_volume)d\n' % tick.mydict())
         logging.debug('thread=%s,save ticks %s, used:%s' % (threading.current_thread().ident,contract_name,time.time()-b,))
 
     def _save_minute1(self,contract_name,minute):

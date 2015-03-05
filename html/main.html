@@ -1,0 +1,42 @@
+<!DOCTYPE html>   
+<html>   
+<head>   
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">   
+<title>Index</title>   
+<script type="text/javascript">   
+var ws = null;
+var ws_uri = "ws://localhost:9002/";
+function startWebSocket() {   
+    if ('WebSocket' in window)   
+        ws = new WebSocket(ws_uri);   
+    else if ('MozWebSocket' in window)   
+        ws = new MozWebSocket(ws_uri);   
+    else   
+        alert("not support");   
+       
+       
+    ws.onmessage = function(evt) {   
+        o.innerHTML=o.innerHTML+evt.data+"<Br/>";   
+    };   
+       
+    ws.onclose = function(evt) {   
+        alert("close");   
+    };   
+       
+    ws.onopen = function(evt) {   
+        alert("open");   
+    };   
+}   
+   
+function sendMsg() {   
+    ws.send(document.getElementById('writeMsg').value);   
+}   
+</script>   
+</head>   
+<body onload="startWebSocket();">   
+<input type="text" id="writeMsg"></input>   
+<input type="button" value="send" onclick="sendMsg()"></input>  
+<Br/>
+<span id="o"></span>
+</body>   
+</html> 

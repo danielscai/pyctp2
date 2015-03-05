@@ -7,6 +7,12 @@
 
 
 import logging
+import threading
+import time
+import asyncio
+
+from pydispatch import dispatcher
+from autobahn.asyncio.websocket import WebSocketServerProtocol, WebSocketServerFactory
 
 from ..common.base import INFO_PATH,DATA_PATH
 from ..md import ctp_md as cm
@@ -15,12 +21,6 @@ from ..common.contract_type import CM_ALL, CM_ZJ
 from ..md import ws_agent
 
 from ..my.ports import ZSUsersC as my_ports
-
-import asyncio
-from autobahn.asyncio.websocket import WebSocketServerProtocol, WebSocketServerFactory
-import threading
-import time
-from pydispatch import dispatcher
 
 
 def make_users(mduser,contract_managers):
@@ -56,17 +56,6 @@ def md_exec():
     # return make_users(my_ports,[CM_ALL])
     return make_users(my_ports,[CM_ALL])
 
-
-SIGNAL = 'my-first-signal'
-
-def producer():
-    i = 0
-    while True:
-        i += 1
-        print (i)
-        dispatcher.send(data=i)
-        time.sleep(1)
-
 class MyServerProtocol(WebSocketServerProtocol):
     def onConnect(self, request):
         print("Client connecting: {}".format(request.peer))
@@ -88,7 +77,6 @@ class MyServerProtocol(WebSocketServerProtocol):
         print("WebSocket connection closed: {}".format(reason))
 
     def onMessage(self, payload, isBinary):
-      ## echo back message verbatim
         self.sendMessage(payload, isBinary)
 
 def ws_exec():
