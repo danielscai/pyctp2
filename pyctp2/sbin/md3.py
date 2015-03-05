@@ -12,7 +12,7 @@ from ..common.base import INFO_PATH,DATA_PATH
 from ..md import ctp_md as cm
 from ..common import controller as ctl
 from ..common.contract_type import CM_ALL, CM_ZJ
-from ..md import save_agent as save_agent
+from ..md import ws_agent
 
 from ..my.ports import ZSUsersC as my_ports
 
@@ -25,7 +25,7 @@ from pydispatch import dispatcher
 
 def make_users(mduser,contract_managers):
     controller = ctl.TController()
-    mdagents = [save_agent.SaveAgent(cmng,DATA_PATH) for cmng in contract_managers]
+    mdagents = [ws_agent.WsAgent(cmng,DATA_PATH) for cmng in contract_managers]
     for mdagent in mdagents:
         controller.register_agent(mdagent)
     tt = ctl.Scheduler(160000,controller.day_finalize,24*60*60)
@@ -54,7 +54,7 @@ def md_exec():
     '''
     logging.basicConfig(filename="%s/pyctp2_md.log" % (INFO_PATH,),level=logging.DEBUG,format='%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s')
     # return make_users(my_ports,[CM_ALL])
-    return make_users(my_ports,[CM_ZJ])
+    return make_users(my_ports,[CM_ALL])
 
 
 SIGNAL = 'my-first-signal'
@@ -71,11 +71,11 @@ class MyServerProtocol(WebSocketServerProtocol):
     def onConnect(self, request):
         print("Client connecting: {}".format(request.peer))
 
-    def handle_event(self,data):
+    def handle_event(self,tick,contract):
         """Simple event handler"""
-        print('data')
-        tick=data
-        msg = str(data.name).encode('utf8')
+        print(contract)
+        msg = str(contract) + str(tick.price)
+        msg = msg.encode('utf8')
         self.sendMessage(msg)
         print ("message send")
 
