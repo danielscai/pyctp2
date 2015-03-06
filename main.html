@@ -6,6 +6,12 @@
 <script type="text/javascript">   
 var ws = null;
 var ws_uri = "ws://localhost:9002/";
+
+var o1_high = 0;
+var o1_low = 0;
+var p1_high = 0;
+var p2_low = 0;
+
 function startWebSocket() {   
     if ('WebSocket' in window)   
         ws = new WebSocket(ws_uri);   
@@ -17,8 +23,24 @@ function startWebSocket() {
        
     ws.onmessage = function(evt) {   
 //        o.innerHTML=o.innerHTML+evt.data+"<Br/>";
-        o.innerHTML= evt.data+"<Br/>";
-    };   
+        o.innerHTML= evt.data+"<Br/>"
+//        tick =JSON.parse(evt.data);
+//        console.log(tick.contract);
+//        if(tick.contract=='TF1509'){
+//            o1_high = tick.high;
+//            o1_low = tick.low;
+//            delta = o1_low - p1_high ;
+//            o.innerHTML= tick.contract + "|" + tick.high + "|" + tick.low + "|" + delta + "<Br/>";
+//        }
+////        else if (tick.contract=='TF1503') {
+//        else {
+//            p1_high = tick.high
+//            p1_low = tick.low
+//            delta = o1_low - p1_high ;
+//            p.innerHTML= tick.contract + "|" + tick.high + "|" + tick.low + "|" + delta + "<Br/>";
+//
+//        };
+    };
        
     ws.onclose = function(evt) {   
         alert("close");   
@@ -39,5 +61,6 @@ function sendMsg() {
 <input type="button" value="send" onclick="sendMsg()"></input>  
 <Br/>
 <span id="o"></span>
+<span id="p"></span>
 </body>   
 </html> 

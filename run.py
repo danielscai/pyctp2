@@ -9,6 +9,7 @@ import logging
 import threading
 
 import asyncio
+import json
 from pydispatch import dispatcher
 from autobahn.asyncio.websocket import WebSocketServerProtocol, WebSocketServerFactory
 
@@ -59,11 +60,17 @@ class MyServerProtocol(WebSocketServerProtocol):
 
     def handle_event(self,tick,contract):
         """Simple event handler"""
-        print(contract)
-        msg = str(contract) + str(tick.price)
+
+        msg = {
+            'contract':contract,
+            'high':tick.high,
+            'low':tick.low
+        }
+        msg = json.dumps(msg)
         msg = msg.encode('utf8')
         self.sendMessage(msg)
-        print ("message send")
+
+        print (contract + "send ")
 
     def onOpen(self):
         print("WebSocket connection open.")
