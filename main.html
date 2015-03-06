@@ -2,7 +2,10 @@
 <html>   
 <head>   
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">   
-<title>Index</title>   
+<title>Index</title>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
 <script type="text/javascript">   
 var ws = null;
 var ws_uri = "ws://localhost:9002/";
@@ -22,33 +25,32 @@ function startWebSocket() {
        
        
     ws.onmessage = function(evt) {   
-//        o.innerHTML=o.innerHTML+evt.data+"<Br/>";
-        o.innerHTML= evt.data+"<Br/>"
-//        tick =JSON.parse(evt.data);
-//        console.log(tick.contract);
-//        if(tick.contract=='TF1509'){
-//            o1_high = tick.high;
-//            o1_low = tick.low;
-//            delta = o1_low - p1_high ;
-//            o.innerHTML= tick.contract + "|" + tick.high + "|" + tick.low + "|" + delta + "<Br/>";
-//        }
-////        else if (tick.contract=='TF1503') {
-//        else {
-//            p1_high = tick.high
-//            p1_low = tick.low
-//            delta = o1_low - p1_high ;
-//            p.innerHTML= tick.contract + "|" + tick.high + "|" + tick.low + "|" + delta + "<Br/>";
-//
-//        };
+        tick =JSON.parse(evt.data)
+        console.log(tick)
+        // o.innerHTML= evt.data+"<Br/>";
+        if(tick.contract=='TF1509'){
+            o1_high = tick.high;
+            o1_low = tick.low;
+            delta = o1_low - p1_high ;
+            o.innerHTML= tick.contract + "|" + tick.high + "|" + tick.low + "|" + delta + "<Br/>";
+        }
+        else{
+            p1_high = tick.high
+            p1_low = tick.low
+            delta = 0;
+            p.innerHTML= tick.contract + "|" + tick.high + "|" + tick.low + "|" + delta + "<Br/>";
+        };
     };
        
-    ws.onclose = function(evt) {   
-        alert("close");   
-    };   
-       
-    ws.onopen = function(evt) {   
-        alert("open");   
-    };   
+    ws.onclose = function(evt) {
+        $("#send_contract").attr('disabled','disabled');
+        $("#send_contract").html('服务器已断开,重新连接,请刷新当前页面');
+    };
+
+    ws.onopen = function(evt) {
+        $("#send_contract").attr('disabled',null);
+        $("#send_contract").html('发送合约');
+    };
 }   
    
 function sendMsg() {   
@@ -57,8 +59,10 @@ function sendMsg() {
 </script>   
 </head>   
 <body onload="startWebSocket();">   
-<input type="text" id="writeMsg"></input>   
-<input type="button" value="send" onclick="sendMsg()"></input>  
+    <div class="container">
+        <input type="text" id="writeMsg"></input>
+        <button id='send_contract' class="btn btn-default" disabled type="button" onclick="sendMsg()"> 正在连接服务器...</button>
+    </div>
 <Br/>
 <span id="o"></span>
 <span id="p"></span>

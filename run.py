@@ -70,7 +70,7 @@ class MyServerProtocol(WebSocketServerProtocol):
         msg = msg.encode('utf8')
         self.sendMessage(msg)
 
-        print (contract + "send ")
+        print (contract + " send ")
 
     def onOpen(self):
         print("WebSocket connection open.")
