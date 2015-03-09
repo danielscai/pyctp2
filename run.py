@@ -56,21 +56,32 @@ def md_exec():
 
 class MyServerProtocol(WebSocketServerProtocol):
     def onConnect(self, request):
+        self.contract_sub =[]
+        self.step=0
         print("Client connecting: {}".format(request.peer))
 
     def handle_event(self,tick,contract):
         """Simple event handler"""
 
+        self.step += 1
         msg = {
             'contract':contract,
-            'high':tick.high,
-            'low':tick.low
+            'high':tick.bid_price,
+            'low':tick.ask_price,
+            'step':self.step
         }
         msg = json.dumps(msg)
         msg = msg.encode('utf8')
-        self.sendMessage(msg)
-
-        print (contract + " send ")
+        if contract in self.contract_sub:
+            self.sendMessage(msg)
+            print (msg )
+            print ("%s send" % contract)
+            print (tick)
+            print (tick.price)
+            print (tick.bid_price)
+            print (tick.ask_price)
+            print (tick.bid_volume)
+            print (tick.ask_volume)
 
     def onOpen(self):
         print("WebSocket connection open.")
@@ -78,10 +89,17 @@ class MyServerProtocol(WebSocketServerProtocol):
         dispatcher.connect( self.handle_event, sender=dispatcher.Any)
 
     def onClose(self, wasClean, code, reason):
+        dispatcher.disconnect( self.handle_event, sender=dispatcher.Any)
         print("WebSocket connection closed: {}".format(reason))
 
     def onMessage(self, payload, isBinary):
-        self.sendMessage(payload, isBinary)
+        # self.sendMessage(payload, isBinary)
+        data=str(payload.decode('utf8'))
+        print (data)
+
+        self.contract_sub.append(data)
+        dispatcher.connect(self.handle_event, sender=dispatcher.Any)
+
 
 def ws_exec():
     factory = WebSocketServerFactory()
